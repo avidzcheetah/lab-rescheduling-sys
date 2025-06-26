@@ -51,30 +51,30 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
     const mockApprovedRequests: ApprovedRequest[] = [
       {
         id: 1,
-        studentId: 'STU002',
-        studentName: 'Jane Smith',
-        email: 'jane.smith@university.edu',
-        subject: 'Database Systems Lab',
-        originalDate: '2024-01-16',
+        studentId: '22E008',
+        studentName: 'WITHARANA A.D.S.',
+        email: '2022e008@eng.jfn.ac.lk',
+        subject: 'Database Systems Lab 03',
+        originalDate: '2025-03-16',
         originalTime: '09:00',
-        preferredDate: '2024-01-19',
-        preferredTime: '11:00',
+        preferredDate: '2025-04-19',
+        preferredTime: '08:00',
         reason: 'Family emergency',
-        approvedAt: '2024-01-11'
+        approvedAt: '2025-03-18'
       }
     ];
 
     const mockSchedules: LabSchedule[] = [
       {
         id: 1,
-        date: '2024-01-19',
-        timeSlot: '11:00-13:00',
-        subject: 'Database Systems Lab',
+        date: '2025-05-19',
+        timeSlot: '08:00-11:00',
+        subject: 'Database Systems Lab 02',
         labId: 1,
         labName: 'Computer Lab 1',
         location: 'Building A, Room 101',
         coordinatorId: 'COORD001',
-        students: ['STU002']
+        students: ['22E065']
       }
     ];
 

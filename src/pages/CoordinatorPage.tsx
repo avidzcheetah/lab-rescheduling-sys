@@ -35,9 +35,9 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
         email: '2022e108@eng.jfn.ac.lk',
         subject: 'Computer Networks Lab',
         currentDate: '2025-01-15',
-        currentTime: '10:00',
+        currentTime: '08:00',
         preferredDate: '2025-01-18',
-        preferredTime: '14:00',
+        preferredTime: '08:00',
         reason: 'Medical appointment conflict',
         status: 'pending',
         createdAt: '2025-01-15'
@@ -51,7 +51,7 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
         currentDate: '2025-03-16',
         currentTime: '09:00',
         preferredDate: '2025-04-19',
-        preferredTime: '11:00',
+        preferredTime: '08:00',
         reason: 'Family emergency',
         status: 'approved',
         createdAt: '2025-03-17'
@@ -63,9 +63,9 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
         email: '2020e097@eng.jfn.ac.lk',
         subject: 'Web Development Lab',
         currentDate: '2025-05-17',
-        currentTime: '15:00',
+        currentTime: '09:00',
         preferredDate: '2025-05-20',
-        preferredTime: '10:00',
+        preferredTime: '08:00',
         reason: 'Job interview',
         status: 'pending',
         createdAt: '2025-05-08'
