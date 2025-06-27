@@ -7,11 +7,9 @@ interface RescheduleRequest {
   studentName: string;
   email: string;
   subject: string;
-  currentDate: string;
-  currentTime: string;
-  preferredDate: string;
-  preferredTime: string;
+  labName: string;
   reason: string;
+  instructorName: string,
   status: 'pending' | 'approved' | 'rejected';
   createdAt: string;
 }
@@ -33,11 +31,9 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
         studentId: '22E108',
         studentName: 'RAVISH W.',
         email: '2022e108@eng.jfn.ac.lk',
-        subject: 'Computer Networks Lab',
-        currentDate: '2025-01-15',
-        currentTime: '08:00',
-        preferredDate: '2025-01-18',
-        preferredTime: '08:00',
+        subject: 'Computer Networks',
+        labName: 'Lab 02',
+        instructorName: 'Ms. Anjali Fonseka',
         reason: 'Medical appointment conflict',
         status: 'pending',
         createdAt: '2025-01-15'
@@ -47,11 +43,9 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
         studentId: '22E008',
         studentName: 'WITHARANA A.D.S.',
         email: '2022e008@eng.jfn.ac.lk',
-        subject: 'Database Systems Lab 03',
-        currentDate: '2025-03-16',
-        currentTime: '09:00',
-        preferredDate: '2025-04-19',
-        preferredTime: '08:00',
+        subject: 'Database Systems',
+        labName: 'Lab 03',
+        instructorName: 'Mr. P. Arumugam',
         reason: 'Family emergency',
         status: 'approved',
         createdAt: '2025-03-17'
@@ -61,11 +55,9 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
         studentId: '20E097',
         studentName: 'SIVAKUMAR R.',
         email: '2020e097@eng.jfn.ac.lk',
-        subject: 'Web Development Lab',
-        currentDate: '2025-05-17',
-        currentTime: '09:00',
-        preferredDate: '2025-05-20',
-        preferredTime: '08:00',
+        subject: 'Web Development',
+        labName: 'Lab 05',
+        instructorName: 'Mr. S. Chandrasekhar',
         reason: 'Job interview',
         status: 'pending',
         createdAt: '2025-05-08'
@@ -155,35 +147,9 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
                       <span className="text-sm font-medium text-gray-600">Subject:</span>
                       <p className="text-gray-800">{selectedRequest.subject}</p>
                     </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Current Schedule</h3>
-                  <div className="bg-red-50 rounded-lg p-4 space-y-3">
                     <div>
-                      <span className="text-sm font-medium text-gray-600">Date:</span>
-                      <p className="text-gray-800">{selectedRequest.currentDate}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-600">Time:</span>
-                      <p className="text-gray-800">{selectedRequest.currentTime}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Preferred Schedule</h3>
-                  <div className="bg-green-50 rounded-lg p-4 space-y-3">
-                    <div>
-                      <span className="text-sm font-medium text-gray-600">Date:</span>
-                      <p className="text-gray-800">{selectedRequest.preferredDate}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-600">Time:</span>
-                      <p className="text-gray-800">{selectedRequest.preferredTime}</p>
+                      <span className="text-sm font-medium text-gray-600">Lab session:</span>
+                      <p className="text-gray-800">{selectedRequest.email}</p>
                     </div>
                   </div>
                 </div>
@@ -305,12 +271,12 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
                     <p className="text-gray-800">{request.subject}</p>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-600">Current:</span>
-                    <p className="text-gray-800">{request.currentDate} at {request.currentTime}</p>
+                    <span className="font-medium text-gray-600">Lab Session:</span>
+                    <p className="text-gray-800">{request.labName}</p>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-600">Preferred:</span>
-                    <p className="text-gray-800">{request.preferredDate} at {request.preferredTime}</p>
+                    <span className="font-medium text-gray-600">Instructor Name:</span>
+                    <p className="text-gray-800">{request.instructorName}</p>
                   </div>
                   <div>
                     <span className="font-medium text-gray-600">Submitted:</span>

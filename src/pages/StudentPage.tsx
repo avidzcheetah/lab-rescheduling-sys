@@ -13,12 +13,11 @@ const StudentPage: React.FC<StudentPageProps> = ({ onBack }) => {
     email: '',
     currentDate: '',
     currentTime: '',
-    preferredDate: '',
-    preferredTime: '',
     reason: '',
     subject: '',
     coordinatorId: '',
-    instructorId: ''
+    instructorId: '',
+    labName: ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,12 +54,11 @@ const StudentPage: React.FC<StudentPageProps> = ({ onBack }) => {
         email: '',
         currentDate: '',
         currentTime: '',
-        preferredDate: '',
-        preferredTime: '',
         reason: '',
         subject: '',
         coordinatorId: '',
-        instructorId: ''
+        instructorId: '',
+        labName: ''
       });
     } catch (error) {
       console.error('Error submitting request:', error);
@@ -213,6 +211,36 @@ const StudentPage: React.FC<StudentPageProps> = ({ onBack }) => {
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Name of the Lab session
+                </label>
+                <input
+                  type="text"
+                  name="labName"
+                  value={formData.labName}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Enter name of lab session"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Instructor ID
+                </label>
+                <input
+                  type="text"
+                  name="instructorId"
+                  value={formData.instructorId}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Enter instructor ID"
+                />
+              </div>
+
+              <div>
                 <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
                   <Calendar className="w-4 h-4 mr-2" />
                   Current Lab Date
@@ -236,36 +264,6 @@ const StudentPage: React.FC<StudentPageProps> = ({ onBack }) => {
                   type="time"
                   name="currentTime"
                   value={formData.currentTime}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Preferred New Date
-                </label>
-                <input
-                  type="date"
-                  name="preferredDate"
-                  value={formData.preferredDate}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <Clock className="w-4 h-4 mr-2" />
-                  Preferred New Time
-                </label>
-                <input
-                  type="time"
-                  name="preferredTime"
-                  value={formData.preferredTime}
                   onChange={handleInputChange}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"

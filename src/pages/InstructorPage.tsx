@@ -7,12 +7,14 @@ interface ApprovedRequest {
   studentName: string;
   email: string;
   subject: string;
+  labName: string;
+  coordinatorName: string;
   originalDate: string;
   originalTime: string;
   preferredDate: string;
   preferredTime: string;
   reason: string;
-  approvedAt: string;
+  createdAt: string;
 }
 
 interface LabSchedule {
@@ -54,13 +56,15 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
         studentId: '22E008',
         studentName: 'WITHARANA A.D.S.',
         email: '2022e008@eng.jfn.ac.lk',
-        subject: 'Database Systems Lab 03',
+        subject: 'Database Systems',
+        labName: 'Lab 03',
+        coordinatorName: 'Prof. A. Kumar',
         originalDate: '2025-03-16',
         originalTime: '09:00',
         preferredDate: '2025-04-19',
         preferredTime: '08:00',
         reason: 'Family emergency',
-        approvedAt: '2025-03-18'
+        createdAt: '2025-03-18'
       }
     ];
 
@@ -69,9 +73,9 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
         id: 1,
         date: '2025-05-19',
         timeSlot: '08:00-11:00',
-        subject: 'Database Systems Lab 02',
+        subject: 'Database Systems',
         labId: 1,
-        labName: 'Computer Lab 1',
+        labName: 'Lab 02',
         location: 'Building A, Room 101',
         coordinatorId: 'COORD001',
         students: ['22E065']
@@ -299,16 +303,16 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
                           <p className="text-gray-800">{request.subject}</p>
                         </div>
                         <div>
-                          <span className="font-medium text-gray-600">Original:</span>
-                          <p className="text-gray-800">{request.originalDate} at {request.originalTime}</p>
+                          <span className="font-medium text-gray-600">Lab:</span>
+                          <p className="text-gray-800">{request.labName}</p>
                         </div>
                         <div>
-                          <span className="font-medium text-gray-600">Preferred:</span>
-                          <p className="text-gray-800">{request.preferredDate} at {request.preferredTime}</p>
+                          <span className="font-medium text-gray-600">Coordinator:</span>
+                          <p className="text-gray-800">{request.coordinatorName}</p>
                         </div>
                         <div>
-                          <span className="font-medium text-gray-600">Approved:</span>
-                          <p className="text-gray-800">{request.approvedAt}</p>
+                          <span className="font-medium text-gray-600">Submitted:</span>
+                          <p className="text-gray-800">{request.createdAt}</p>
                         </div>
                       </div>
                       
