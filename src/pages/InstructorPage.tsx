@@ -1,32 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Clock, Users, Plus, Mail } from 'lucide-react';
+import axios from 'axios';
 
 interface ApprovedRequest {
-  id: number;
-  studentId: string;
-  studentName: string;
+  Request_id: string;
+  student_id: string;
+  F_name: string;
+  L_name: string;
   email: string;
-  subject: string;
-  labName: string;
-  coordinatorName: string;
-  originalDate: string;
-  originalTime: string;
-  preferredDate: string;
-  preferredTime: string;
-  reason: string;
-  createdAt: string;
+  Reason: string;
+  status: string;
+  created_at: string;
+  Instructor_id: string;
+  coordinator_id: string;
+  lab_name: string;
 }
 
 interface LabSchedule {
-  id: number;
-  date: string;
-  timeSlot: string;
-  subject: string;
-  labId: number;
-  labName: string;
-  location: string;
-  coordinatorId: string;
-  students: string[];
+  Schedule_id: string;
+  Date: string;
+  Time_Slot: string;
+  Subject: string;
+  Lab_id: string;
+  Lab_name: string;
+  Location: string;
+  coordinator_id: string;
+  students?: string[];
 }
 
 interface InstructorPageProps {
@@ -37,78 +36,103 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
   const [approvedRequests, setApprovedRequests] = useState<ApprovedRequest[]>([]);
   const [schedules, setSchedules] = useState<LabSchedule[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newSchedule, setNewSchedule] = useState({
-    date: '',
-    timeSlot: '',
-    subject: '',
-    labId: 1,
-    labName: 'Computer Lab 1',
-    location: 'Building A, Room 101',
-    coordinatorId: 'COORD001',
-    students: [] as string[]
-  });
+  const [newSchedule, setNewSchedule] = useState<LabSchedule>(
+    {
+      Schedule_id: '',
+      Date: '',
+      Time_Slot: '',
+      Subject: '',
+      Lab_id: '',
+      Lab_name: '',
+      Location: '',
+      coordinator_id: '',
+      students: []
+    }
+  );
 
   // Mock data
   useEffect(() => {
-    const mockApprovedRequests: ApprovedRequest[] = [
-      {
-        id: 1,
-        studentId: '22E008',
-        studentName: 'WITHARANA A.D.S.',
-        email: '2022e008@eng.jfn.ac.lk',
-        subject: 'Database Systems',
-        labName: 'Lab 03',
-        coordinatorName: 'Prof. A. Kumar',
-        originalDate: '2025-03-16',
-        originalTime: '09:00',
-        preferredDate: '2025-04-19',
-        preferredTime: '08:00',
-        reason: 'Family emergency',
-        createdAt: '2025-03-18'
-      }
-    ];
+    axios.get('http://localhost/schedule/src/services/database.php?action=get_requests')
+      .then(response => {
+      console.log('API Response:', response.data);
+      // Filter only approved requests
+      const approved = response.data.filter((req: any) => req.status === 'Approved');
+      setApprovedRequests(approved);
+      })
+      .catch(error => {
+      console.error('API Error:', error);
+      alert('API call failed! Check console for details.');
+      });
 
-    const mockSchedules: LabSchedule[] = [
-      {
-        id: 1,
-        date: '2025-05-19',
-        timeSlot: '08:00-11:00',
-        subject: 'Database Systems',
-        labId: 1,
-        labName: 'Lab 02',
-        location: 'Building A, Room 101',
-        coordinatorId: 'COORD001',
-        students: ['22E065']
-      }
-    ];
+      axios.get('http://localhost/schedule/src/services/database.php?action=get_schedules')
+      .then(response => {
+      console.log('API Response:', response.data);
+      // Sort schedules by date descending and take the 10 most recent
+      const sortedSchedules = response.data
+        .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setSchedules(sortedSchedules);
 
-    setApprovedRequests(mockApprovedRequests);
-    setSchedules(mockSchedules);
+      })
+      .catch(error => {
+      console.error('API Error:', error);
+      alert('API call failed! Check console for details.');
+      });
+
   }, []);
 
   const handleCreateSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const schedule: LabSchedule = {
-      id: schedules.length + 1,
-      ...newSchedule,
-      timeSlot: `${newSchedule.timeSlot}-${addHours(newSchedule.timeSlot, 2)}`
+
+    // Prepare data to match PHP backend expectations
+    const postData = {
+      action: 'create_schedule',
+      data: {
+        date: newSchedule.Date,
+        timeSlot: `${newSchedule.Time_Slot}-${addHours(newSchedule.Time_Slot, 2)}`,
+        subject: newSchedule.Lab_name, // Assuming Lab_name is used as subject
+        labId: newSchedule.Lab_id,
+        coordinatorId: newSchedule.coordinator_id
+      }
     };
 
-    setSchedules(prev => [...prev, schedule]);
-    
-    // Send email notifications to students
-    // await sendScheduleNotifications(schedule);
-    
+    axios.post('http://localhost/schedule/src/services/database.php?action=create_schedule', postData)
+      .then(response => {
+      console.log('Schedule created:', response.data);
+      // Optionally update local state with new schedule
+      setSchedules(prev => [
+        ...prev,
+        {
+        ...newSchedule,
+        Schedule_id: response.data.id?.toString() || (prev.length + 1).toString(),
+        Date: newSchedule.Date,
+        Time_Slot: postData.data.timeSlot,
+        Subject: postData.data.subject,
+        Lab_id: postData.data.labId,
+        Lab_name: newSchedule.Lab_name,
+        Location: newSchedule.Location,
+        coordinator_id: newSchedule.coordinator_id,
+        students: newSchedule.students || []
+        }
+      ]);
+      alert('Schedule created successfully!');
+      })
+      .catch(error => {
+      console.error('Error creating schedule:', error);
+      alert('Failed to create schedule. Please try again.');
+      });
+
+    // Optionally send notifications here
+
     setShowCreateForm(false);
     setNewSchedule({
-      date: '',
-      timeSlot: '',
-      subject: '',
-      labId: 1,
-      labName: 'Computer Lab 1',
-      location: 'Building A, Room 101',
-      coordinatorId: 'COORD001',
+      Schedule_id: '',
+      Date: '',
+      Time_Slot: '',
+      Subject: '',
+      Lab_id: '',
+      Lab_name: '',
+      Location: '',
+      coordinator_id: '',
       students: []
     });
   };
@@ -151,9 +175,9 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
                     Lab Date
                   </label>
                   <input
-                    type="date"
-                    name="date"
-                    value={newSchedule.date}
+                    type="Date"
+                    name="Date"
+                    value={newSchedule?.Date}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
@@ -167,8 +191,8 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
                   </label>
                   <input
                     type="time"
-                    name="timeSlot"
-                    value={newSchedule.timeSlot}
+                    name="Time_Slot"
+                    value={newSchedule.Time_Slot}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
@@ -181,8 +205,8 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
                   </label>
                   <input
                     type="text"
-                    name="subject"
-                    value={newSchedule.subject}
+                    name="Lab_name"
+                    value={newSchedule.Lab_name}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
@@ -194,18 +218,30 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Lab
                   </label>
-                  <select
-                    name="labId"
-                    value={newSchedule.labId}
+                  <input
+                    type="text"
+                    name="Location"
+                    value={newSchedule.Location}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                  >
-                    <option value={1}>Computer Lab 1 - Building A, Room 101</option>
-                    <option value={2}>Computer Lab 2 - Building A, Room 102</option>
-                    <option value={3}>Physics Lab - Building B, Room 201</option>
-                    <option value={4}>Chemistry Lab - Building B, Room 301</option>
-                  </select>
+                    placeholder="Enter lab name"
+                  />
+                </div>
+
+                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Lab ID
+                  </label>
+                  <input
+                    type="text"
+                    name="Lab_id"
+                    value={newSchedule.Lab_id}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                    placeholder="Enter lab name"
+                  />
                 </div>
 
                 <div>
@@ -214,8 +250,8 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
                   </label>
                   <input
                     type="text"
-                    name="coordinatorId"
-                    value={newSchedule.coordinatorId}
+                    name="coordinator_id"
+                    value={newSchedule.coordinator_id}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
@@ -285,12 +321,12 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
                 <div className="space-y-4">
                   {approvedRequests.map((request) => (
                     <div
-                      key={request.id}
+                      key={request.Request_id}
                       className="bg-green-50 border border-green-200 rounded-lg p-6"
                     >
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-800">
-                          {request.studentName} ({request.studentId})
+                          {request.F_name+ request.L_name} ({request.student_id})
                         </h3>
                         <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                           Approved
@@ -298,27 +334,24 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
                       </div>
                       
                       <div className="grid md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="font-medium text-gray-600">Subject:</span>
-                          <p className="text-gray-800">{request.subject}</p>
-                        </div>
+                
                         <div>
                           <span className="font-medium text-gray-600">Lab:</span>
-                          <p className="text-gray-800">{request.labName}</p>
+                          <p className="text-gray-800">{request.lab_name}</p>
                         </div>
                         <div>
                           <span className="font-medium text-gray-600">Coordinator:</span>
-                          <p className="text-gray-800">{request.coordinatorName}</p>
+                          <p className="text-gray-800">{request.coordinator_id}</p>
                         </div>
                         <div>
                           <span className="font-medium text-gray-600">Submitted:</span>
-                          <p className="text-gray-800">{request.createdAt}</p>
+                          <p className="text-gray-800">{request.created_at}</p>
                         </div>
                       </div>
                       
                       <div className="mt-4">
                         <span className="font-medium text-gray-600">Reason:</span>
-                        <p className="text-gray-800 mt-1">{request.reason}</p>
+                        <p className="text-gray-800 mt-1">{request.Reason}</p>
                       </div>
                     </div>
                   ))}
@@ -339,12 +372,12 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
                 <div className="space-y-4">
                   {schedules.map((schedule) => (
                     <div
-                      key={schedule.id}
+                      key={schedule.Schedule_id}
                       className="bg-blue-50 border border-blue-200 rounded-lg p-6"
                     >
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-800">
-                          {schedule.subject}
+                          {schedule.Lab_name}
                         </h3>
                         <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                           Scheduled
@@ -354,19 +387,15 @@ const InstructorPage: React.FC<InstructorPageProps> = ({ onBack }) => {
                       <div className="grid md:grid-cols-2 gap-4 text-sm">
                         <div>
                           <span className="font-medium text-gray-600">Date & Time:</span>
-                          <p className="text-gray-800">{schedule.date} - {schedule.timeSlot}</p>
+                          <p className="text-gray-800">{schedule.Date} - {schedule.Time_Slot}</p>
                         </div>
                         <div>
                           <span className="font-medium text-gray-600">Lab:</span>
-                          <p className="text-gray-800">{schedule.labName}</p>
+                          <p className="text-gray-800">{schedule.Lab_name}</p>
                         </div>
                         <div>
                           <span className="font-medium text-gray-600">Location:</span>
-                          <p className="text-gray-800">{schedule.location}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-600">Students:</span>
-                          <p className="text-gray-800">{schedule.students.length} enrolled</p>
+                          <p className="text-gray-800">{schedule.Location}</p>
                         </div>
                       </div>
                       

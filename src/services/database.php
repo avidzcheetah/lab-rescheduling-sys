@@ -1,4 +1,16 @@
 <?php
+// CORS headers to allow cross-origin requests
+header("Access-Control-Allow-Origin: http://localhost:5174");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Credentials: true");
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
 // Database connection configuration
 $servername = "localhost";
 $username = "root";
@@ -15,6 +27,35 @@ if ($conn->connect_error) {
 
 // Set charset to utf8
 $conn->set_charset("utf8");
+
+/**
+ * Log request details for debugging.
+ *
+ * @param string $method HTTP method (GET, POST, etc.)
+ * @param string $uri Request URI
+ * @param array $headers Request headers
+ * @param string $body Raw request body
+ */
+function logRequest($method, $uri, $headers, $body) {
+    $logFile = __DIR__ . '/request.log';
+    $logData = sprintf(
+        "[%s] %s %s\nHeaders: %s\nBody: %s\n\n",
+        date('Y-m-d H:i:s'),
+        $method,
+        $uri,
+        json_encode($headers),
+        $body
+    );
+    file_put_contents($logFile, $logData, FILE_APPEND);
+}
+
+// Log the current request
+logRequest(
+    $_SERVER['REQUEST_METHOD'],
+    $_SERVER['REQUEST_URI'],
+    function_exists('getallheaders') ? getallheaders() : [],
+    file_get_contents('php://input')
+);
 
 // Function to get all reschedule requests
 function getRescheduleRequests() {
@@ -57,11 +98,11 @@ function createRescheduleRequest($data) {
     }
     
     // Create reschedule request
-    $sql = "INSERT INTO RESCHEDULE_REQUEST (status, created_at, Reason, Instructor_id, coordinator_id, student_id) 
-            VALUES ('pending', NOW(), ?, ?, ?, ?)";
+    $sql = "INSERT INTO RESCHEDULE_REQUEST (status, created_at, Reason, Instructor_id, coordinator_id, student_id, lab_name) 
+            VALUES ('pending', NOW(), ?, ?, ?, ?, ?)";
     
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssss", $data['reason'], $data['instructorId'], $data['coordinatorId'], $data['studentId']);
+    $stmt->bind_param("sssss", $data['reason'], $data['instructorId'], $data['coordinatorId'], $data['studentId'],$data['labName']);
     
     if ($stmt->execute()) {
         return ["success" => true, "message" => "Request submitted successfully"];
@@ -73,7 +114,7 @@ function createRescheduleRequest($data) {
 // Function to update request status
 function updateRequestStatus($requestId, $status) {
     global $conn;
-    
+    // Log the status update to the logfile
     $sql = "UPDATE RESCHEDULE_REQUEST SET status = ? WHERE Request_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("si", $status, $requestId);
@@ -140,7 +181,7 @@ function createNotification($message, $recipient) {
 // API endpoints handler
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
-    
+
     if (isset($input['action'])) {
         switch ($input['action']) {
             case 'create_request':

@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CheckCircle, XCircle, Clock, Mail, Eye } from 'lucide-react';
+import axios from 'axios';
 
 interface RescheduleRequest {
-  id: number;
-  studentId: string;
-  studentName: string;
+  Request_id: string;
+  student_id: string;
+  F_name: string;
+  L_name: string;
   email: string;
-  subject: string;
-  labName: string;
-  reason: string;
-  instructorName: string,
-  status: 'pending' | 'approved' | 'rejected';
-  createdAt: string;
+  Reason: string;
+  status: string;
+  created_at: string;
+  Instructor_id: string;
+  coordinator_id: string;
+  lab_name: string;
 }
 
 interface CoordinatorPageProps {
@@ -21,69 +23,54 @@ interface CoordinatorPageProps {
 const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
   const [requests, setRequests] = useState<RescheduleRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<RescheduleRequest | null>(null);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [filter, setFilter] = useState<'All' | 'Pending' | 'Approved' | 'Rejected'>('All');
 
   // Mock data - replace with actual API calls
+  
   useEffect(() => {
-    const mockRequests: RescheduleRequest[] = [
-      {
-        id: 1,
-        studentId: '22E108',
-        studentName: 'RAVISH W.',
-        email: '2022e108@eng.jfn.ac.lk',
-        subject: 'Computer Networks',
-        labName: 'Lab 02',
-        instructorName: 'Ms. Anjali Fonseka',
-        reason: 'Medical appointment conflict',
-        status: 'pending',
-        createdAt: '2025-01-15'
-      },
-      {
-        id: 2,
-        studentId: '22E008',
-        studentName: 'WITHARANA A.D.S.',
-        email: '2022e008@eng.jfn.ac.lk',
-        subject: 'Database Systems',
-        labName: 'Lab 03',
-        instructorName: 'Mr. P. Arumugam',
-        reason: 'Family emergency',
-        status: 'approved',
-        createdAt: '2025-03-17'
-      },
-      {
-        id: 3,
-        studentId: '20E097',
-        studentName: 'SIVAKUMAR R.',
-        email: '2020e097@eng.jfn.ac.lk',
-        subject: 'Web Development',
-        labName: 'Lab 05',
-        instructorName: 'Mr. S. Chandrasekhar',
-        reason: 'Job interview',
-        status: 'pending',
-        createdAt: '2025-05-08'
-      }
-    ];
-    setRequests(mockRequests);
+
+      // Test the PHP backend API - GET requests
+      axios.get('http://localhost/schedule/src/services/database.php?action=get_requests')
+        .then(response => {
+          console.log('API Response:', response.data);
+          setRequests(response.data);
+         
+        })
+        .catch(error => {
+          console.error('API Error:', error);
+          alert('API call failed! Check console for details.');
+        });
+    
   }, []);
 
-  const handleApprove = async (requestId: number) => {
-    setRequests(prev => 
-      prev.map(req => 
-        req.id === requestId 
-          ? { ...req, status: 'approved' as const }
-          : req
-      )
-    );
-    
-    // Send email notification here
-    // await sendEmailNotification(request, 'approved');
+  const handleApprove = async (requestId: string) => {
+    try {
+      const response = await axios.post('http://localhost/schedule/src/services/database.php?action=update_status', {
+        action: 'update_status',
+        requestId: requestId,
+        status: 'Approved'
+      });
+      console.log('API Response:', response.data);
+      setRequests(prev => 
+        prev.map(req => 
+          req.Request_id === requestId 
+            ? { ...req, status: 'Approved' as const }
+            : req
+        )
+      );
+      // Send email notification here
+      // await sendEmailNotification(request, 'approved');
+    } catch (error) {
+      console.error('API Error:', error);
+      alert('Failed to approve request. Please try again.');
+    }
   };
 
-  const handleReject = async (requestId: number) => {
+  const handleReject = async (requestId: string) => {
     setRequests(prev => 
       prev.map(req => 
-        req.id === requestId 
-          ? { ...req, status: 'rejected' as const }
+        req.Request_id === requestId 
+          ? { ...req, status: 'Rejected' as const }
           : req
       )
     );
@@ -93,17 +80,17 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
   };
 
   const filteredRequests = requests.filter(req => 
-    filter === 'all' ? true : req.status === filter
+    filter === 'All' ? true : req.status === filter
   );
 
   const getStatusBadge = (status: string) => {
     const baseClasses = "px-3 py-1 rounded-full text-sm font-medium";
     switch (status) {
-      case 'pending':
+      case 'Pending':
         return `${baseClasses} bg-yellow-100 text-yellow-800`;
-      case 'approved':
+      case 'Approved':
         return `${baseClasses} bg-green-100 text-green-800`;
-      case 'rejected':
+      case 'Rejected':
         return `${baseClasses} bg-red-100 text-red-800`;
       default:
         return `${baseClasses} bg-gray-100 text-gray-800`;
@@ -133,11 +120,11 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
                   <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                     <div>
                       <span className="text-sm font-medium text-gray-600">Student ID:</span>
-                      <p className="text-gray-800">{selectedRequest.studentId}</p>
+                      <p className="text-gray-800">{selectedRequest.student_id}</p>
                     </div>
                     <div>
                       <span className="text-sm font-medium text-gray-600">Name:</span>
-                      <p className="text-gray-800">{selectedRequest.studentName}</p>
+                      <p className="text-gray-800">{selectedRequest.F_name + ' ' + selectedRequest.L_name}</p>
                     </div>
                     <div>
                       <span className="text-sm font-medium text-gray-600">Email:</span>
@@ -145,11 +132,11 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
                     </div>
                     <div>
                       <span className="text-sm font-medium text-gray-600">Subject:</span>
-                      <p className="text-gray-800">{selectedRequest.subject}</p>
+                      <p className="text-gray-800">{selectedRequest.lab_name}</p>
                     </div>
                     <div>
                       <span className="text-sm font-medium text-gray-600">Lab session:</span>
-                      <p className="text-gray-800">{selectedRequest.email}</p>
+                      <p className="text-gray-800">{selectedRequest.lab_name}</p>
                     </div>
                   </div>
                 </div>
@@ -157,7 +144,7 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">Reason</h3>
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-gray-800">{selectedRequest.reason}</p>
+                    <p className="text-gray-800">{selectedRequest.Reason}</p>
                   </div>
                 </div>
 
@@ -168,24 +155,24 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
                       {selectedRequest.status.charAt(0).toUpperCase() + selectedRequest.status.slice(1)}
                     </span>
                     <span className="text-sm text-gray-600">
-                      Submitted: {selectedRequest.createdAt}
+                      Submitted: {selectedRequest.created_at}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {selectedRequest.status === 'pending' && (
+            {selectedRequest.status === 'Pending' && (
               <div className="mt-8 flex justify-end space-x-4">
                 <button
-                  onClick={() => handleReject(selectedRequest.id)}
+                  onClick={() => handleReject(selectedRequest.Request_id)}
                   className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
                 >
                   <XCircle className="w-4 h-4 mr-2" />
                   Reject
                 </button>
                 <button
-                  onClick={() => handleApprove(selectedRequest.id)}
+                  onClick={() => handleApprove(selectedRequest.Request_id)}
                   className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
@@ -218,7 +205,7 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Reschedule Requests</h2>
             
             <div className="flex space-x-4 mb-6">
-              {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
+              {(['All', 'Pending', 'Approved', 'Rejected'] as const).map((status) => (
                 <button
                   key={status}
                   onClick={() => setFilter(status)}
@@ -229,7 +216,7 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
                   }`}
                 >
                   {status.charAt(0).toUpperCase() + status.slice(1)}
-                  {status !== 'all' && (
+                  {status !== 'All' && (
                     <span className="ml-2 bg-white bg-opacity-20 px-2 py-1 rounded-full text-xs">
                       {requests.filter(req => req.status === status).length}
                     </span>
@@ -242,13 +229,13 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
           <div className="space-y-4">
             {filteredRequests.map((request) => (
               <div
-                key={request.id}
+                key={request.Request_id}
                 className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-gray-300 transition-colors"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-4">
                     <h3 className="text-lg font-semibold text-gray-800">
-                      {request.studentName} ({request.studentId})
+                      {request.F_name + ' ' + request.L_name} ({request.student_id})
                     </h3>
                     <span className={getStatusBadge(request.status)}>
                       {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
@@ -268,33 +255,33 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
                 <div className="grid md:grid-cols-4 gap-4 text-sm">
                   <div>
                     <span className="font-medium text-gray-600">Subject:</span>
-                    <p className="text-gray-800">{request.subject}</p>
+                    <p className="text-gray-800">{request.lab_name}</p>
                   </div>
                   <div>
                     <span className="font-medium text-gray-600">Lab Session:</span>
-                    <p className="text-gray-800">{request.labName}</p>
+                    <p className="text-gray-800">{request.lab_name}</p>
                   </div>
                   <div>
                     <span className="font-medium text-gray-600">Instructor Name:</span>
-                    <p className="text-gray-800">{request.instructorName}</p>
+                    <p className="text-gray-800">{request.Instructor_id}</p>
                   </div>
                   <div>
                     <span className="font-medium text-gray-600">Submitted:</span>
-                    <p className="text-gray-800">{request.createdAt}</p>
+                    <p className="text-gray-800">{request.created_at}</p>
                   </div>
                 </div>
 
-                {request.status === 'pending' && (
+                {request.status === 'Pending' && (
                   <div className="flex justify-end space-x-3 mt-4">
                     <button
-                      onClick={() => handleReject(request.id)}
+                      onClick={() => handleReject(request.Request_id)}
                       className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm flex items-center"
                     >
                       <XCircle className="w-4 h-4 mr-1" />
                       Reject
                     </button>
                     <button
-                      onClick={() => handleApprove(request.id)}
+                      onClick={() => handleApprove(request.Request_id)}
                       className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm flex items-center"
                     >
                       <CheckCircle className="w-4 h-4 mr-1" />
@@ -310,7 +297,7 @@ const CoordinatorPage: React.FC<CoordinatorPageProps> = ({ onBack }) => {
                 <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-600 mb-2">No requests found</h3>
                 <p className="text-gray-500">
-                  {filter === 'all' 
+                  {filter === 'All' 
                     ? 'No reschedule requests have been submitted yet.'
                     : `No ${filter} requests found.`
                   }

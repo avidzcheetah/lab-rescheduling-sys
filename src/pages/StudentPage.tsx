@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Send, Calendar, Clock, FileText, User } from 'lucide-react';
+import { ArrowLeft, Send, FileText, User } from 'lucide-react';
+import axios from 'axios';
 
 interface StudentPageProps {
   onBack: () => void;
@@ -11,8 +12,6 @@ const StudentPage: React.FC<StudentPageProps> = ({ onBack }) => {
     firstName: '',
     lastName: '',
     email: '',
-    currentDate: '',
-    currentTime: '',
     reason: '',
     subject: '',
     coordinatorId: '',
@@ -36,37 +35,48 @@ const StudentPage: React.FC<StudentPageProps> = ({ onBack }) => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call to submit reschedule request
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Here you would make an actual API call to your backend
-      // const response = await fetch('/api/reschedule-request', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
+      // Prepare data for PHP backend
+      const requestData = {
+        action: 'create_request',
+        data: {
+          studentId: formData.studentId,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          reason: formData.reason,
+          instructorId: formData.instructorId,
+          coordinatorId: formData.coordinatorId
+        }
+      };
 
-      setSubmitSuccess(true);
-      setFormData({
-        studentId: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        currentDate: '',
-        currentTime: '',
-        reason: '',
-        subject: '',
-        coordinatorId: '',
-        instructorId: '',
-        labName: ''
-      });
+      // Make API call to PHP backend
+      const response = await axios.post('http://localhost/schedule/src/services/database.php', requestData);
+      
+      if (response.data.success) {
+        setSubmitSuccess(true);
+        setFormData({
+          studentId: '',
+          firstName: '',
+          lastName: '',
+          email: '',
+          reason: '',
+          subject: '',
+          coordinatorId: '',
+          instructorId: '',
+          labName: ''
+        });
+      } else {
+        console.error('Failed to submit request:', response.data);  
+      }
     } catch (error) {
       console.error('Error submitting request:', error);
+      alert('Failed to submit request. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  
   if (submitSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -237,36 +247,6 @@ const StudentPage: React.FC<StudentPageProps> = ({ onBack }) => {
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="Enter instructor ID"
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Current Lab Date
-                </label>
-                <input
-                  type="date"
-                  name="currentDate"
-                  value={formData.currentDate}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                  <Clock className="w-4 h-4 mr-2" />
-                  Current Lab Time
-                </label>
-                <input
-                  type="time"
-                  name="currentTime"
-                  value={formData.currentTime}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
               </div>
             </div>
